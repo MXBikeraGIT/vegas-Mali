@@ -1,0 +1,40 @@
+name: Download and Extract DXVK 1.10.3 Source
+
+on:
+  workflow_dispatch:  # Manual trigger
+  # push:
+  #   branches: [ main ]  # Uncomment if you want automatic on push
+
+jobs:
+  download-extract:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          repository: MXBikeraGIT/vegas-Mali
+          ref: main  # or your default branch
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Download DXVK 1.10.3 source zip
+        run: |
+          curl -L -o dxvk-1.10.3.zip https://github.com/doitsujin/dxvk/archive/refs/tags/v1.10.3.zip
+
+      - name: Extract and prepare source
+        run: |
+          # Remove old contents of dxvk/dxvk-source if exists
+          rm -rf DXVK/dxvk-source/*
+          # Extract zip, it will create a folder like dxvk-1.10.3
+          unzip -q dxvk-1.10.3.zip
+          # Move the extracted contents (including subdirectories) into DXVK/dxvk-source
+          mv dxvk-1.10.3/* DXVK/dxvk-source/
+          # Clean up
+          rm -rf dxvk-1.10.3 dxvk-1.10.3.zip
+
+      - name: Commit and push changes
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add DXVK/dxvk-source/
+          git commit -m "Add DXVK 1.10.3 source" || echo "No changes to commit"
+          git push
